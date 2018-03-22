@@ -24,6 +24,10 @@ class AddItemViewController: UIViewController {
     
     @IBOutlet weak var datePicker: UIDatePicker!
     
+    @IBAction func cancelButtonPressed(_ sender: UIBarButtonItem) {
+        delegate?.cancelButtonPressed(by: self)
+    }
+    
     @IBAction func addButtonPressed(_ sender: UIButton) {
         datePicker.datePickerMode = UIDatePickerMode.date
         dateFormatter.dateFormat = "MM/dd/yy"
@@ -39,11 +43,14 @@ class AddItemViewController: UIViewController {
         notesTextField.text = editNotes
         
         dateFormatter.dateFormat = "MM/dd/yy"
-        let date = dateFormatter.date(from: editDate!)
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.month, .day, .year], from: date!)
-        let finalDate = calendar.date(from: components)
-        datePicker.date = finalDate!
+        if editDate != nil {
+            let date = dateFormatter.date(from: editDate!)
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.month, .day, .year], from: date!)
+            let finalDate = calendar.date(from: components)
+            datePicker.date = finalDate!
+        }
+        
         // Do any additional setup after loading the view, typically from a nib.
     }
 

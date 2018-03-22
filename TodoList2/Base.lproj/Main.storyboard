@@ -78,7 +78,13 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" id="djK-ve-saJ"/>
+                    <navigationItem key="navigationItem" id="djK-ve-saJ">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="YH4-s0-Il6">
+                            <connections>
+                                <action selector="cancelButtonPressed:" destination="BYZ-38-t0r" id="0Cl-yM-mMC"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="datePicker" destination="IcW-4G-uZJ" id="Bl8-B4-bFW"/>
                         <outlet property="notesTextField" destination="8sW-Jr-xXS" id="Fgl-o2-7If"/>

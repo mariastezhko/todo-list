@@ -69,7 +69,9 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "AddItemSegue" {
             //let navigationController = segue.destination as! UINavigationController
-            let addItemViewController = segue.destination as! AddItemViewController
+            let navigationController = segue.destination as! UINavigationController
+            //let addItemViewController = segue.destination as! AddItemViewController
+            let addItemViewController = navigationController.topViewController as! AddItemViewController
             addItemViewController.delegate = self
             
             if (sender as? NSIndexPath) != nil {
@@ -95,6 +97,10 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
         } catch {
             print(error)
         }
+    }
+    
+    func cancelButtonPressed(by controller: AddItemViewController) {
+        dismiss(animated: true, completion: nil)
     }
     
     func itemSaved(by controller: AddItemViewController, title: String, notes: String, date: String, at indexPath: NSIndexPath?) {
