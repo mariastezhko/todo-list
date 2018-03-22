@@ -9,5 +9,5 @@
 import Foundation
 
 protocol AddItemViewControllerDelegate: class {
-    func itemSaved(by controller: AddItemViewController, title: String, notes: String, date: String)
+    func itemSaved(by controller: AddItemViewController, title: String, notes: String, date: String, at indexPath: NSIndexPath?)
 }

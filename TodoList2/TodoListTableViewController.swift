@@ -71,6 +71,15 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
             //let navigationController = segue.destination as! UINavigationController
             let addItemViewController = segue.destination as! AddItemViewController
             addItemViewController.delegate = self
+            
+            if (sender as? NSIndexPath) != nil {
+                let indexPath = sender as! NSIndexPath
+                let item = items[indexPath.row]
+                addItemViewController.editTitle = item.title!
+                addItemViewController.editNotes = item.notes!
+                addItemViewController.editDate = item.date!
+                addItemViewController.indexPath = indexPath
+            }
         }
     }
     
@@ -88,22 +97,28 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
         }
     }
     
-    func itemSaved(by controller: AddItemViewController, title: String, notes: String, date: String) {
+    func itemSaved(by controller: AddItemViewController, title: String, notes: String, date: String, at indexPath: NSIndexPath?) {
         
-        print("text \(title), \(notes), \(date)")
-        let item = NSEntityDescription.insertNewObject(forEntityName: "TodoListItem", into: managedObjectContext) as! TodoListItem
-        item.title = title
-        item.notes = notes
-        item.date = date
-        items.append(item)
-        print(items)
+        if let index = indexPath {
+            items[index.row].title = title
+            items[index.row].notes = notes
+        } else {
         
+            print("text \(title), \(notes), \(date)")
+            let item = NSEntityDescription.insertNewObject(forEntityName: "TodoListItem", into: managedObjectContext) as! TodoListItem
+            item.title = title
+            item.notes = notes
+            item.date = date
+            items.append(item)
+            print(items)
+        }
         
         do {
             try managedObjectContext.save()
         } catch {
             print(error)
         }
+        tableView.reloadData()
         dismiss(animated: true, completion: nil)
     }
     
@@ -140,26 +155,44 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
     */
 
     
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-//        if editingStyle == .delete {
-//            // Delete the row from the data source
-//            tableView.deleteRows(at: [indexPath], with: .fade)
-//        } else if editingStyle == .insert {
-//            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+//    // Override to support editing the table view.
+//    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+//        let item = items[indexPath.row]
+//        managedObjectContext.delete(item)
+//
+//        do {
+//            try managedObjectContext.save()
+//        } catch {
+//            print(error)
 //        }
-        let item = items[indexPath.row]
-        managedObjectContext.delete(item)
-        
-        do {
-            try managedObjectContext.save()
-        } catch {
-            print(error)
-        }
-        items.remove(at: indexPath.row)
-        tableView.reloadData()
-    }
+//        items.remove(at: indexPath.row)
+//        tableView.reloadData()
+//    }
     
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
+            // delete item at indexPath
+            let item = self.items[indexPath.row]
+            self.managedObjectContext.delete(item)
+            
+            do {
+                try self.managedObjectContext.save()
+            } catch {
+                print(error)
+            }
+            self.items.remove(at: indexPath.row)
+            tableView.reloadData()
+        }
+        
+        let edit = UITableViewRowAction(style: .normal, title: "Edit") { (action, indexPath) in
+            // edit item at indexPath
+            self.performSegue(withIdentifier: "AddItemSegue", sender: indexPath)
+        }
+        
+        edit.backgroundColor = UIColor.blue
+        
+        return [delete, edit]
+    }
 
     /*
     // Override to support rearranging the table view.
