@@ -14,6 +14,7 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
     var items = [TodoListItem]()
     
     let managedObjectContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let appDelegate = (UIApplication.shared.delegate as! AppDelegate)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,33 +43,23 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
-
-//    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        // #warning Incomplete implementation, return the number of rows
-//        return 1
-//    }
     
     //var nums = [1, 90, 32, 23, 9, 12]
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell") as! CustomCell
-        print("Hi")
         cell.titleLabel.text = items[indexPath.row].title!
-        //cell.titleLabel.text = "yyyyy"
         cell.notesLabel.text = items[indexPath.row].notes!
         cell.dateLabel.text = items[indexPath.row].date!
-        //cell.rightLabel.text = "\(nums[indexPath.row])"
-        //if nums[indexPath.row] > 24 {
-           // cell.leftButton.backgroundColor = UIColor.green()
-        //} else {
-          //  cell.leftButton.backgroundColor = UIColor.red()
-        //}
-        // return cell so that Table View knows what to draw in each row
+        if items[indexPath.row].complete {
+            cell.accessoryType = .checkmark
+        } else {
+            cell.accessoryType = .none
+        }
         return cell
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "AddItemSegue" {
-            //let navigationController = segue.destination as! UINavigationController
             let navigationController = segue.destination as! UINavigationController
             //let addItemViewController = segue.destination as! AddItemViewController
             let addItemViewController = navigationController.topViewController as! AddItemViewController
@@ -129,17 +120,45 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        
-        if let cell = tableView.cellForRow(at: indexPath as IndexPath) {
-            if cell.accessoryType == .checkmark{
-                cell.accessoryType = .none
+//        tableView.deselectRow(at: indexPath, animated: true)
+//
+//        if let cell = tableView.cellForRow(at: indexPath as IndexPath) {
+//            if cell.accessoryType == .checkmark{
+//                cell.accessoryType = .none
+//            }
+//            else{
+//                cell.accessoryType = .checkmark
+//            }
+//        }
+        items[indexPath.row].complete = !items[indexPath.row].complete
+        print(items[indexPath.row].complete)
+        appDelegate.saveContext()
+        tableView.reloadData()
+    }
+    
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
+            // delete item at indexPath
+            let item = self.items[indexPath.row]
+            self.managedObjectContext.delete(item)
+            
+            do {
+                try self.managedObjectContext.save()
+            } catch {
+                print(error)
             }
-            else{
-                cell.accessoryType = .checkmark
-            }
+            self.items.remove(at: indexPath.row)
+            tableView.reloadData()
         }
         
+        let edit = UITableViewRowAction(style: .normal, title: "Edit") { (action, indexPath) in
+            // edit item at indexPath
+            self.performSegue(withIdentifier: "AddItemSegue", sender: indexPath)
+        }
+        
+        edit.backgroundColor = UIColor.blue
+        
+        return [delete, edit]
     }
     
     /*
@@ -175,31 +194,7 @@ class TodoListTableViewController: UITableViewController, AddItemViewControllerD
 //        tableView.reloadData()
 //    }
     
-    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
-        let delete = UITableViewRowAction(style: .destructive, title: "Delete") { (action, indexPath) in
-            // delete item at indexPath
-            let item = self.items[indexPath.row]
-            self.managedObjectContext.delete(item)
-            
-            do {
-                try self.managedObjectContext.save()
-            } catch {
-                print(error)
-            }
-            self.items.remove(at: indexPath.row)
-            tableView.reloadData()
-        }
-        
-        let edit = UITableViewRowAction(style: .normal, title: "Edit") { (action, indexPath) in
-            // edit item at indexPath
-            self.performSegue(withIdentifier: "AddItemSegue", sender: indexPath)
-        }
-        
-        edit.backgroundColor = UIColor.blue
-        
-        return [delete, edit]
-    }
-
+    
     /*
     // Override to support rearranging the table view.
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
